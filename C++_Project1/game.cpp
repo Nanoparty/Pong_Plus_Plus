@@ -7,50 +7,37 @@ struct GameObject {
     float vel_x, vel_y;
     float acc_x, acc_y;
     float half_size_x, half_size_y;
-    int color;
+    u32 color;
 };
 
-GameObject player1 = {};
-GameObject player2 = {};
-GameObject ball = {};
+GameObject player1 = { 80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0x00ffff };
+GameObject player2 = { -80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0xff4564 };
+GameObject ball = { 0, 0, 100, 0, 0, 0, 1.f, 1.f, 0x00ff00 };
 
-float player1_pos, player1_vel;
-float player2_pos, player2_vel;
-
-float ball_pos_x, ball_pos_y, ball_vel_x = 100, ball_vel_y, ball_acc_x, ball_acc_y;
-
-float player_half_size_x = 2.5f, player_half_size_y = 12.f;
 float arena_half_size_x = 88, arena_half_size_y = 45;
-float ball_half_size = 1.f;
-
 float speed = 50.f;
-
-u32 player1_color = 0x00ffff;
-u32 player2_color = 0xff4564;
-u32 ball_color = 0x00ff00;
 u32 border_color = 0xf7f7f7;
 u32 background_color = 0x000000;
-
 int player1_score, player2_score;
 
-internal void simulate_player(float* pos, float* vel, float* acc, float dt) {
+internal void simulate_player(GameObject& player, float dt) {
     // Friction
-    *acc -= *vel * 10.f;
+    player.acc_y -= player.vel_y * 10.f;
 
     // Calculate Player Movement
-    *pos = *pos + *vel * dt + *acc * dt * dt * .5f;
-    *vel = *vel + *acc * dt;
+    player.pos_y = player.pos_y + player.vel_y * dt + player.acc_y * dt * dt * .5f;
+    player.vel_y = player.vel_y + player.acc_y * dt;
 
     // Check Arena Collision Top
-    if (*pos + player_half_size_y > arena_half_size_y) {
-        *pos = arena_half_size_y - player_half_size_y;
-        *vel *= -.6f;
+    if (player.pos_y + player.half_size_y > arena_half_size_y) {
+        player.pos_y = arena_half_size_y - player.half_size_y;
+        player.vel_y *= -.6f;
     }
 
     // Check Arena Collision Bottom
-    if (*pos - player_half_size_y < -arena_half_size_y) {
-        *pos = -arena_half_size_y + player_half_size_y;
-        *vel *= -.6f;
+    if (player.pos_y - player.half_size_y < -arena_half_size_y) {
+        player.pos_y = -arena_half_size_y + player.half_size_y;
+        player.vel_y *= -.6f;
     }
 }
 
@@ -62,78 +49,75 @@ internal bool aabb_aabb(float p1x, float p1y, float hs1x, float hs1y, float p2x,
         p1y - hs1y < p2y + hs2y);
 }
 
+internal void reset_ball() {
+    ball.vel_x *= -1;
+    ball.vel_y = 0;
+    ball.pos_x = ball.pos_y = 0;
+}
+
 internal void simulate_game(Input* input, float dt) {
 
     // Draw Background
     clear_screen(border_color);
     draw_rect(0, 0, 88, 45, background_color);
 
-    float player1_acc = 0.f;
-    float player2_acc = 0.f;
+    player1.acc_y = 0.f;
+    player2.acc_y = 0.f;
 
     // Player Input
-    if (is_down(BUTTON_UP)) player1_acc += 2000;
-    if (is_down(BUTTON_DOWN)) player1_acc -= 2000;
+    if (is_down(BUTTON_UP)) player1.acc_y += 2000;
+    if (is_down(BUTTON_DOWN)) player1.acc_y -= 2000;
 
-    if (is_down(BUTTON_W)) player2_acc += 2000;
-    if (is_down(BUTTON_S)) player2_acc -= 2000;
+    if (is_down(BUTTON_W)) player2.acc_y += 2000;
+    if (is_down(BUTTON_S)) player2.acc_y -= 2000;
 
-    simulate_player(&player1_pos, &player1_vel, &player1_acc, dt);
-    simulate_player(&player2_pos, &player2_vel, &player2_acc, dt);
+    simulate_player(player1, dt);
+    simulate_player(player2, dt);
 
     // Simulate Ball
     {
         // Ball Movement
-        ball_pos_x += ball_vel_x * dt;
-        ball_pos_y += ball_vel_y * dt;
+        ball.pos_x += ball.vel_x * dt;
+        ball.pos_y += ball.vel_y * dt;
 
         // Ball Player Collision
-        if (aabb_aabb(ball_pos_x, ball_pos_y, ball_half_size, ball_half_size, 80, player1_pos, player_half_size_x, player_half_size_y))
+        if (aabb_aabb(ball.pos_x, ball.pos_y, ball.half_size_x, ball.half_size_y, player1.pos_x, player1.pos_y, player1.half_size_x, player1.half_size_y))
         {
-            ball_pos_x = 80 - player_half_size_x - ball_half_size;
-            ball_vel_x *= -1;
-            ball_vel_y = player1_vel * 0.75f;
+            ball.pos_x = player1.pos_x - player1.half_size_x - ball.half_size_x;
+            ball.vel_x *= -1;
+            ball.vel_y = player1.vel_y * 0.75f;
         }
-        else if (ball_pos_x + ball_half_size > -80 - player_half_size_x &&
-            ball_pos_x - ball_half_size < -80 + player_half_size_x &&
-            ball_pos_y + ball_half_size > player2_pos - player_half_size_y &&
-            ball_pos_y - ball_half_size < player2_pos + player_half_size_y)
+        else if (aabb_aabb(ball.pos_x, ball.pos_y, ball.half_size_x, ball.half_size_y, player2.pos_x, player2.pos_y, player2.half_size_x, player2.half_size_y))
         {
-            ball_pos_x = -80 + player_half_size_x + ball_half_size;
-            ball_vel_x *= -1;
-            ball_vel_y = player2_vel * 0.75f;
+            ball.pos_x = player2.pos_x + player2.half_size_x + ball.half_size_x;
+            ball.vel_x *= -1;
+            ball.vel_y = player2.vel_y * 0.75f;
         }
 
         // Ball Horizontal Collision
-        if (ball_pos_y + ball_half_size > arena_half_size_y) {
-            ball_pos_y = arena_half_size_y - ball_half_size;
-            ball_vel_y *= -1;
+        if (ball.pos_y + ball.half_size_y > arena_half_size_y) {
+            ball.pos_y = arena_half_size_y - ball.half_size_y;
+            ball.vel_y *= -1;
         }
-        if (ball_pos_y - ball_half_size < -arena_half_size_y) {
-            ball_pos_y = -arena_half_size_y + ball_half_size;
-            ball_vel_y *= -1;
+        if (ball.pos_y - ball.half_size_y < -arena_half_size_y) {
+            ball.pos_y = -arena_half_size_y + ball.half_size_y;
+            ball.vel_y *= -1;
         }
 
         // Ball Vertical Collision
-        if (ball_pos_x + ball_half_size > arena_half_size_x) {
-            ball_vel_x *= -1;
-            ball_vel_y = 0;
-            ball_pos_x = ball_pos_y = 0;
+        if (ball.pos_x + ball.half_size_x > arena_half_size_x) {
+            reset_ball();
             player2_score += 1;
         }
-        else if (ball_pos_x - ball_half_size < -arena_half_size_x) {
-            ball_vel_x *= -1;
-            ball_vel_y = 0;
-            ball_pos_x = ball_pos_y = 0;
+        else if (ball.pos_x - ball.half_size_x < -arena_half_size_x) {
+            reset_ball();
             player1_score += 1;
         }
     }
 
-    // Draw Players
-    draw_rect(80, player1_pos, player_half_size_x, player_half_size_y, player1_color);
-    draw_rect(-80, player2_pos, player_half_size_x, player_half_size_y, player2_color);
+    // Rendering
+    draw_rect(player1.pos_x, player1.pos_y, player1.half_size_x, player1.half_size_y, player1.color);
+    draw_rect(player2.pos_x, player2.pos_y, player2.half_size_x, player2.half_size_y, player2.color);
 
-    // Draw Ball
-    draw_rect(ball_pos_x, ball_pos_y, ball_half_size, ball_half_size, ball_color);
-    
+    draw_rect(ball.pos_x, ball.pos_y, ball.half_size_x, ball.half_size_y, ball.color);
 }
