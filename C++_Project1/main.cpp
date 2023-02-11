@@ -30,7 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
     // Create the window.
     HWND window = CreateWindow(
         CLASS_NAME,
-        L"P0NG",
+        L"PONG++",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720,
         NULL,
@@ -62,7 +62,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 
         for (int y = 0; y < buffer_height; y++) {
             for (int x = 0; x < buffer_width; x++) {
-                *pixel++ = sin(x*y)*(x*y);
+                //*pixel++ = sin(x*y)*(x*y); rainbow
+                *pixel++ = 0xff00ff * x + 0x00ff00 * y;
             }
         }
 
