@@ -1,2 +1,7 @@
 ﻿  main.cpp
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\renderer.cpp(35,12): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\renderer.cpp(36,12): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\renderer.cpp(37,12): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\renderer.cpp(38,12): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\main.cpp(56,41): warning C4305: 'argument': truncation from 'double' to 'float'
   C++_Project1.vcxproj -> C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\x64\Debug\C++_Project1.exe

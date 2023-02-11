@@ -2,16 +2,23 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include "utils.cpp"
 
-bool running = true;
-void* buffer_memory;
-int buffer_width;
-int buffer_height;
-BITMAPINFO buffer_bitmap_info;
+global_variable bool running = true;
+
+struct Render_State {
+    int height, width;
+    void* memory;
+
+    BITMAPINFO bitmapinfo;
+};
+
+global_variable Render_State render_state;
+
+#include "renderer.cpp"
+
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-void OnSize(HWND hwnd, UINT flag, int width, int height);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
@@ -28,21 +35,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
     RegisterClass(&window_class);
 
     // Create the window.
-    HWND window = CreateWindow(
-        CLASS_NAME,
-        L"PONG++",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720,
-        NULL,
-        NULL,
-        hInstance,
-        NULL
-    );
+    HWND window = CreateWindow(CLASS_NAME, L"PONG++", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, hInstance, NULL);
 
-    if (window == NULL)
-    {
-        return 0;
-    }
+    if (window == NULL) { return 0; }
 
     HDC hdc = GetDC(window);
 
@@ -57,18 +52,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
         }
 
         // Simulate
-        unsigned int* pixel = (unsigned int*)buffer_memory;
-        unsigned int color = 0xeb5905;
-
-        for (int y = 0; y < buffer_height; y++) {
-            for (int x = 0; x < buffer_width; x++) {
-                //*pixel++ = sin(x*y)*(x*y); rainbow
-                *pixel++ = 0xff00ff * x + 0x00ff00 * y;
-            }
-        }
+        clear_screen(0xff5500);
+        draw_rect(0, 0, .2, .2, 0x00ff00);
 
         // Render
-        StretchDIBits(hdc, 0, 0, buffer_width, buffer_height, 0, 0, buffer_width, buffer_height, buffer_memory, &buffer_bitmap_info, DIB_RGB_COLORS, SRCCOPY);
+        StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmapinfo, DIB_RGB_COLORS, SRCCOPY);
     }
 
     return 0;
@@ -89,20 +77,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             RECT rect;
             GetClientRect(hwnd, &rect);
-            buffer_width = rect.right - rect.left;
-            buffer_height = rect.bottom - rect.top;
+            render_state.width = rect.right - rect.left;
+            render_state.height = rect.bottom - rect.top;
 
-            int buffer_size = buffer_width * buffer_height * sizeof(unsigned int);
+            int buffer_size = render_state.width * render_state.height * sizeof(unsigned int);
 
-            if (buffer_memory) VirtualFree(buffer_memory, 0, MEM_RELEASE);
-            buffer_memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            if (render_state.memory) VirtualFree(render_state.memory, 0, MEM_RELEASE);
+            render_state.memory = VirtualAlloc(0, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-            buffer_bitmap_info.bmiHeader.biSize = sizeof(buffer_bitmap_info.bmiHeader);
-            buffer_bitmap_info.bmiHeader.biWidth = buffer_width;
-            buffer_bitmap_info.bmiHeader.biHeight = buffer_height;
-            buffer_bitmap_info.bmiHeader.biPlanes = 1;
-            buffer_bitmap_info.bmiHeader.biBitCount = 32;
-            buffer_bitmap_info.bmiHeader.biCompression = BI_RGB;
+            render_state.bitmapinfo.bmiHeader.biSize = sizeof(render_state.bitmapinfo.bmiHeader);
+            render_state.bitmapinfo.bmiHeader.biWidth = render_state.width;
+            render_state.bitmapinfo.bmiHeader.biHeight = render_state.height;
+            render_state.bitmapinfo.bmiHeader.biPlanes = 1;
+            render_state.bitmapinfo.bmiHeader.biBitCount = 32;
+            render_state.bitmapinfo.bmiHeader.biCompression = BI_RGB;
         }
         break;
 
@@ -112,9 +100,4 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     return result;
-}
-
-void OnSize(HWND hwnd, UINT flag, int width, int height)
-{
-    // Handle resizing
 }
