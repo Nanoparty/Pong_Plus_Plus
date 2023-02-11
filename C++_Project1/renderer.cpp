@@ -22,12 +22,14 @@ internal void draw_rect_in_pixels(int x0, int y0, int x1, int y1, int color) {
     
 }
 
+global_variable float render_scale = 0.01f;
+
 internal void draw_rect(float x, float y, float half_size_x, float half_size_y, u32 color) {
     // change to pixels
-    x *= render_state.height;
-    y *= render_state.height;
-    half_size_x *= render_state.height;
-    half_size_y *= render_state.height;
+    x *= render_state.height * render_scale;
+    y *= render_state.height * render_scale;
+    half_size_x *= render_state.height * render_scale;
+    half_size_y *= render_state.height * render_scale;
 
     x += render_state.width / 2.f;
     y += render_state.height / 2.f;
