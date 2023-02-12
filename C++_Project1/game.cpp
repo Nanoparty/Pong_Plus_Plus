@@ -2,12 +2,12 @@
 
 GameObject player1 = { 80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0x00ffff };
 GameObject player2 = { -80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0xff4564 };
-GameObject ball = { 0, 0, 100, 0, 0, 0, 1.f, 1.f, 0x00ff00 };
+GameObject ball = { 0, 0, 120, 0, 0, 0, 1.f, 1.f, 0x00ff00 };
 
 float arena_half_size_x = 88, arena_half_size_y = 45;
 float speed = 50.f;
 float bounce = -0.4f;
-int border_color = 0xf7f7f7;
+int border_color = 0xd6d6d6;
 int background_color = 0x000000;
 int player1_score, player2_score;
 
@@ -60,8 +60,15 @@ void simulate_game(Input* input, float dt) {
     if (is_down(BUTTON_UP)) player1.acc_y += 2000;
     if (is_down(BUTTON_DOWN)) player1.acc_y -= 2000;
 
+#if 0
     if (is_down(BUTTON_W)) player2.acc_y += 2000;
     if (is_down(BUTTON_S)) player2.acc_y -= 2000;
+#else
+    //if (ball.pos_y < player2.pos_y + player2.half_size_y / 2) player2.acc_y -= 1500;
+    //if (ball.pos_y > player2.pos_y - player2.half_size_y / 2) player2.acc_y += 1500;
+    player2.acc_y = (ball.pos_y - player2.pos_y) * 100;
+    player2.acc_y = clamp(-1300, player2.acc_y, 1300);
+#endif
 
     simulate_player(player1, dt);
     simulate_player(player2, dt);
@@ -77,13 +84,13 @@ void simulate_game(Input* input, float dt) {
         {
             ball.pos_x = player1.pos_x - player1.half_size_x - ball.half_size_x;
             ball.vel_x *= -1;
-            ball.vel_y = player1.vel_y * 0.75f;
+            ball.vel_y = player1.vel_y * 0.75f + abs(ball.pos_y - player1.pos_y);
         }
         else if (aabb_aabb(ball.pos_x, ball.pos_y, ball.half_size_x, ball.half_size_y, player2.pos_x, player2.pos_y, player2.half_size_x, player2.half_size_y))
         {
             ball.pos_x = player2.pos_x + player2.half_size_x + ball.half_size_x;
             ball.vel_x *= -1;
-            ball.vel_y = player2.vel_y * 0.75f;
+            ball.vel_y = player2.vel_y * 0.75f + abs(ball.pos_y - player2.pos_y);
         }
 
         // Ball Horizontal Collision
