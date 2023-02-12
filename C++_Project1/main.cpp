@@ -1,23 +1,8 @@
-#include <windows.h>
-#include <iostream>
-#include <cmath>
-#include <cstdlib>
-#include "utils.cpp"
+#include "main.h"
 
-global_variable bool running = true;
+static bool running = true;
 
-struct Render_State {
-    int height, width;
-    void* memory;
-
-    BITMAPINFO bitmapinfo;
-};
-
-global_variable Render_State render_state;
-
-#include "renderer.cpp"
-#include "platform_common.cpp"
-#include "game.cpp"
+Render_State render_state;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -70,7 +55,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
             switch (message.message) {
                 case WM_KEYUP:
                 case WM_KEYDOWN: {
-                    u32 vk_code = (u32)message.wParam;
+                    int vk_code = (int)message.wParam;
                     bool is_down = ((message.lParam & (1 << 31)) == 0);
 
 #define process_button(b, vk)\
@@ -97,8 +82,6 @@ input.buttons[b].is_down = is_down;\
         // Simulate
         simulate_game(&input, delta_time);
        
-        
-
         // Render
         StretchDIBits(hdc, 0, 0, render_state.width, render_state.height, 0, 0, render_state.width, render_state.height, render_state.memory, &render_state.bitmapinfo, DIB_RGB_COLORS, SRCCOPY);
     

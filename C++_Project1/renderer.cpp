@@ -1,5 +1,6 @@
+#include "renderer.h"
 
-internal void clear_screen(u32 color) {
+void clear_screen(u32 color) {
     u32* pixel = (u32*)render_state.memory;
     for (int y = 0; y < render_state.height; y++) {
         for (int x = 0; x < render_state.width; x++) {
@@ -8,7 +9,7 @@ internal void clear_screen(u32 color) {
     }
 }
 
-internal void draw_rect_in_pixels(int x0, int y0, int x1, int y1, int color) {
+void draw_rect_in_pixels(int x0, int y0, int x1, int y1, int color) {
     x0 = clamp(0, x0, render_state.width);
     x1 = clamp(0, x1, render_state.width);
     y0 = clamp(0, y0, render_state.height);
@@ -19,12 +20,11 @@ internal void draw_rect_in_pixels(int x0, int y0, int x1, int y1, int color) {
             *pixel++ = color;
         }
     }
-    
 }
 
-global_variable float render_scale = 0.01f;
+float render_scale = 0.01f;
 
-internal void draw_rect(float x, float y, float half_size_x, float half_size_y, u32 color) {
+void draw_rect(float x, float y, float half_size_x, float half_size_y, u32 color) {
     // change to pixels
     x *= render_state.height * render_scale;
     y *= render_state.height * render_scale;
