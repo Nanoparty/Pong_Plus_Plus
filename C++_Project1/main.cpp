@@ -1,13 +1,15 @@
 #include "main.h"
 
 static bool running = true;
+static bool fullscreen = false;
 
 Render_State render_state;
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
+int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
 {
+    // Hide Cursor
+    ShowCursor(FALSE);
+
     // Register the window class.
     const wchar_t CLASS_NAME[] = L"Game Window";
 
@@ -24,6 +26,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
     HWND window = CreateWindow(CLASS_NAME, L"PONG++", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720, NULL, NULL, hInstance, NULL);
 
     if (window == NULL) { return 0; }
+
+    // Fullscreen
+    if (fullscreen) {
+        SetWindowLong(window, GWL_STYLE, GetWindowLong(window, GWL_STYLE) & ~WS_OVERLAPPEDWINDOW);
+        MONITORINFO mi = { sizeof(mi) };
+        GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY), &mi);
+        SetWindowPos(window, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+    }
 
     HDC hdc = GetDC(window);
 

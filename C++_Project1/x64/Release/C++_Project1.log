@@ -1,0 +1,9 @@
+﻿  game.cpp
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\game.cpp(70,41): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\C++_Project1\game.cpp(70,26): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+  Generating code
+  2 of 10 functions (20.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  C++_Project1.vcxproj -> C:\Users\Nate\Documents\GameDev\Pong_Plus_Plus\x64\Release\C++_Project1.exe

@@ -1,4 +1,5 @@
 #include "game.h"
+#include <windows.h>
 
 GameObject player1 = { 80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0x00ffff };
 GameObject player2 = { -80, 0, 0, 0, 0, 0, 2.5f, 12.f, 0xff4564 };
@@ -64,8 +65,6 @@ void simulate_game(Input* input, float dt) {
     if (is_down(BUTTON_W)) player2.acc_y += 2000;
     if (is_down(BUTTON_S)) player2.acc_y -= 2000;
 #else
-    //if (ball.pos_y < player2.pos_y + player2.half_size_y / 2) player2.acc_y -= 1500;
-    //if (ball.pos_y > player2.pos_y - player2.half_size_y / 2) player2.acc_y += 1500;
     player2.acc_y = (ball.pos_y - player2.pos_y) * 100;
     player2.acc_y = clamp(-1300, player2.acc_y, 1300);
 #endif
@@ -84,33 +83,43 @@ void simulate_game(Input* input, float dt) {
         {
             ball.pos_x = player1.pos_x - player1.half_size_x - ball.half_size_x;
             ball.vel_x *= -1;
-            ball.vel_y = player1.vel_y * 0.75f + abs(ball.pos_y - player1.pos_y);
+            if (player1.vel_y > 2 || player1.vel_y < 2) {
+                ball.vel_y = player1.vel_y * 0.75f;
+            }
+            PlaySound(TEXT("bounce.wav"), NULL, SND_ASYNC);
         }
         else if (aabb_aabb(ball.pos_x, ball.pos_y, ball.half_size_x, ball.half_size_y, player2.pos_x, player2.pos_y, player2.half_size_x, player2.half_size_y))
         {
             ball.pos_x = player2.pos_x + player2.half_size_x + ball.half_size_x;
             ball.vel_x *= -1;
-            ball.vel_y = player2.vel_y * 0.75f + abs(ball.pos_y - player2.pos_y);
+            if (player2.vel_y > 2 || player2.vel_y < 2) {
+                ball.vel_y = player2.vel_y * 0.75f;
+            }
+            PlaySound(TEXT("bounce.wav"), NULL, SND_ASYNC);
         }
 
         // Ball Horizontal Collision
         if (ball.pos_y + ball.half_size_y > arena_half_size_y) {
             ball.pos_y = arena_half_size_y - ball.half_size_y;
             ball.vel_y *= -1;
+            PlaySound(TEXT("wall.wav"), NULL, SND_ASYNC);
         }
         if (ball.pos_y - ball.half_size_y < -arena_half_size_y) {
             ball.pos_y = -arena_half_size_y + ball.half_size_y;
             ball.vel_y *= -1;
+            PlaySound(TEXT("wall.wav"), NULL, SND_ASYNC);
         }
 
         // Ball Vertical Collision
         if (ball.pos_x + ball.half_size_x > arena_half_size_x) {
             reset_ball();
             player2_score += 1;
+            PlaySound(TEXT("score.wav"), NULL, SND_ASYNC);
         }
         else if (ball.pos_x - ball.half_size_x < -arena_half_size_x) {
             reset_ball();
             player1_score += 1;
+            PlaySound(TEXT("score.wav"), NULL, SND_ASYNC);
         }
     }
 
